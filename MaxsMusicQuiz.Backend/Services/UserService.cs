@@ -1,0 +1,112 @@
+using MaxsMusicQuiz.Backend.Repositories.Interfaces;
+using MaxsMusicQuiz.Backend.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using SendGrid;
+using SendGrid.Helpers.Mail;
+
+namespace MaxsMusicQuiz.Backend.Services;
+
+public class UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher)
+    : IUserService
+{
+    private static readonly Dictionary<string, (string Email, DateTime ExpiresAt)> ResetTokens = new();
+
+    public async Task<User?> ValidateUserAsync(string username, string password)
+    {
+        var user = await userRepository.GetUserByUsernameAsync(username);
+        if (user != null && passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Success)
+        {
+            return user;
+        }
+        return null;
+    }
+
+    public async Task CreateUserAsync(string username, string password, string email)
+    {
+        var existingUserByUsername = await userRepository.GetUserByUsernameAsync(username);
+        if (existingUserByUsername != null)
+        {
+            throw new InvalidOperationException("User already exists.");
+        }
+
+        var existingUserByEmail = await userRepository.GetUserByEmailAsync(email);
+        if (existingUserByEmail != null)
+        {
+            throw new InvalidOperationException("Email is already in use.");
+        }
+
+        var user = new User
+        {
+            Username = username,
+            Email = email
+        };
+
+        user.PasswordHash = passwordHasher.HashPassword(user, password);
+
+        await userRepository.AddAsync(user);
+    }
+
+    public async Task<bool> SendPasswordResetEmailAsync(string email)
+    {
+        var user = await userRepository.GetUserByEmailAsync(email);
+        if (user == null)
+        {
+            return false;
+        }
+
+        var token = Guid.NewGuid().ToString();
+        ResetTokens[token] = (email, DateTime.UtcNow.AddMinutes(20));
+
+        var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+        if (string.IsNullOrEmpty(sendGridApiKey))
+        {
+            return false;
+        }
+
+        var client = new SendGridClient(sendGridApiKey);
+        var from = new EmailAddress("rasmussandsjo@gmail.com", "Max's Music Quiz");
+        var subject = "Reset Your Password";
+        var to = new EmailAddress(email);
+        var plainText = $"Hi {user.Username},\n\nHere is your password reset token: {token}\n\nThis token will expire in 20 minutes.";
+        var htmlText = $"<p>Hi {user.Username},</p><p>Here is your password reset token:</p><h2>{token}</h2><p>This token will expire in 20 minutes.</p>";
+
+        var msg = MailHelper.CreateSingleEmail(from, to, subject, plainText, htmlText);
+
+        var response = await client.SendEmailAsync(msg);
+
+        return response.StatusCode == System.Net.HttpStatusCode.Accepted;
+    }
+
+    public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+    {
+        if (!ResetTokens.TryGetValue(token, out var entry))
+        {
+            return false;
+        }
+
+        if (DateTime.UtcNow > entry.ExpiresAt)
+        {
+            ResetTokens.Remove(token);
+            return false;
+        }
+
+        var user = await userRepository.GetUserByEmailAsync(entry.Email);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.PasswordHash = passwordHasher.HashPassword(user, newPassword);
+        await userRepository.UpdateAsync(user);
+
+        ResetTokens.Remove(token);
+        return true;
+    }
+    
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        return await userRepository.GetByIdAsync(userId);
+    }
+    
+    
+}
