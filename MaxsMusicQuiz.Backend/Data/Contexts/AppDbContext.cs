@@ -1,33 +1,35 @@
-using MaxsMusicQuiz.Backend.Data.Entities;
-using MaxsMusicQuiz.WebApi.Data.Entities;
+using MaxsMusicQuiz.Backend.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace MaxsMusicQuiz.WebApi.Data
+namespace MaxsMusicQuiz.Backend.Data.Contexts
 {
     public class ApplicationDbContext : DbContext
     {
-        // Constructor that accepts DbContextOptions
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) // Pass the options to the base constructor
-        {
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<QuizGame> QuizGames { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<QuizGameUser> QuizGameUsers { get; set; } // Ensure this is added
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<QuizGame>()
-                .HasMany(g => g.TeamA)
-                .WithMany(u => u.Games)
-                .UsingEntity(j => j.ToTable("TeamAGameUsers"));
+            modelBuilder.Entity<QuizGameUser>().ToTable("QuizGameUsers");
 
-            modelBuilder.Entity<QuizGame>()
-                .HasMany(g => g.TeamB)
-                .WithMany(u => u.Games)
-                .UsingEntity(j => j.ToTable("TeamBGameUsers"));
+            modelBuilder.Entity<QuizGameUser>()
+                .HasKey(qgu => new { qgu.QuizGameId, qgu.UserId });
+
+            modelBuilder.Entity<QuizGameUser>()
+                .HasOne(qgu => qgu.QuizGame)
+                .WithMany(qg => qg.QuizGameUsers)
+                .HasForeignKey(qgu => qgu.QuizGameId);
+
+            modelBuilder.Entity<QuizGameUser>()
+                .HasOne(qgu => qgu.User)
+                .WithMany(u => u.QuizGameUsers)
+                .HasForeignKey(qgu => qgu.UserId);
         }
+
     }
 }

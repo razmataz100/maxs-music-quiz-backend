@@ -1,6 +1,6 @@
 namespace MaxsMusicQuiz.Backend.Services.Interfaces;
 
-public class ITokenService
+public interface ITokenService
 {
-    
+    string GenerateToken(string username, int userId);
 }

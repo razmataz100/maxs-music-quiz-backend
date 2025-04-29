@@ -1,4 +1,4 @@
-namespace MaxsMusicQuiz.Backend.Data.Entities;
+namespace MaxsMusicQuiz.Backend.Models.Entities;
 
 public class QuizGameUser
 {
@@ -8,5 +8,4 @@ public class QuizGameUser
     public int UserId { get; set; }
     public User User { get; set; }
     
-    public string Team { get; set; }
 }
