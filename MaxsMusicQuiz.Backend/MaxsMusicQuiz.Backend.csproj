@@ -26,4 +26,27 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Services\QuestionGenerationService.cs" />
+      <Compile Remove="Services\Interfaces\IQuestionGenerationService.cs" />
+      <Compile Remove="Models\DTOs\QuizQuestion.cs" />
+      <Compile Remove="Models\Enums\QuizGameStatus.cs" />
+      <Compile Remove="Models\Entities\QuizGameUser.cs" />
+      <Compile Remove="Hubs\**" />
+      <Compile Remove="Controllers\SpotifyController.cs" />
+      <Compile Remove="Extensions\HttpContextExtensions.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Hubs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="Hubs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Hubs\**" />
+    </ItemGroup>
+
 </Project>

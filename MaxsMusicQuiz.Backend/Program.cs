@@ -1,6 +1,5 @@
 using MaxsMusicQuiz.Backend.Data.Contexts;
 using MaxsMusicQuiz.Backend.Extensions;
-using MaxsMusicQuiz.Backend.Hubs;
 using MaxsMusicQuiz.Backend.Repositories;
 using MaxsMusicQuiz.Backend.Repositories.Interfaces;
 using MaxsMusicQuiz.Backend.Services;
@@ -35,7 +34,12 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<ISpotifyService, SpotifyService>();
+builder.Services.AddScoped<IRelatedArtistService, RelatedArtistService>();
+builder.Services.AddScoped<ILeaderboardRepository, LeaderboardRepository>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
+builder.Services.AddHttpClient();
 
 builder.Services.AddJwtAuthentication(configuration);
 
@@ -54,10 +58,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowLocalhost5173");
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<GameHub>("/gamehub");
 
 app.Run();

@@ -1,3 +1,5 @@
+using MaxsMusicQuiz.Backend.Models.DTOs;
+using MaxsMusicQuiz.Backend.Models.Enums;
 using MaxsMusicQuiz.Backend.Repositories.Interfaces;
 using MaxsMusicQuiz.Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +12,8 @@ public class UserService(IUserRepository userRepository, IPasswordHasher<User> p
     : IUserService
 {
     private static readonly Dictionary<string, (string Email, DateTime ExpiresAt)> ResetTokens = new();
-
+    private readonly string _uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+    
     public async Task<User?> ValidateUserAsync(string username, string password)
     {
         var user = await userRepository.GetUserByUsernameAsync(username);
@@ -38,7 +41,8 @@ public class UserService(IUserRepository userRepository, IPasswordHasher<User> p
         var user = new User
         {
             Username = username,
-            Email = email
+            Email = email,
+            Role = UserRole.User 
         };
 
         user.PasswordHash = passwordHasher.HashPassword(user, password);
@@ -108,5 +112,81 @@ public class UserService(IUserRepository userRepository, IPasswordHasher<User> p
         return await userRepository.GetByIdAsync(userId);
     }
     
+    public async Task<string> SaveProfilePictureAsync(string userId, IFormFile file)
+    {
+        if (!Directory.Exists(_uploadsPath))
+            Directory.CreateDirectory(_uploadsPath);
     
+        var fileName = $"{userId}_{DateTime.Now.Ticks}{Path.GetExtension(file.FileName)}";
+        var filePath = Path.Combine(_uploadsPath, fileName);
+    
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+    
+        var imageUrl = $"/uploads/profiles/{fileName}";
+        
+        var user = await userRepository.GetByIdAsync(int.Parse(userId));
+        user.ProfilePictureUrl = imageUrl;
+        await userRepository.UpdateAsync(user);
+    
+        return imageUrl;
+    }
+
+    public async Task<string> GetProfilePictureUrlAsync(string userId)
+    {
+        var user = await userRepository.GetByIdAsync(int.Parse(userId));
+        return user?.ProfilePictureUrl;
+    }
+    
+    public async Task<UserInfoResponse> GetUserInfoAsync(string userId)
+    {
+        var user = await userRepository.GetByIdAsync(int.Parse(userId));
+    
+        if (user == null)
+            return null;
+    
+        return new UserInfoResponse
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            ProfilePictureUrl = user.ProfilePictureUrl,
+            TotalScore = user.TotalScore,
+            TotalQuestionsAnswered = user.TotalQuestionsAnswered
+        };
+    }
+    
+    public async Task<bool> UpdateUserInfoAsync(string userId, UpdateUserRequest request)
+    {
+        var user = await userRepository.GetByIdAsync(int.Parse(userId));
+    
+        if (user == null)
+            return false;
+    
+        // Check if username is already taken (if it's different from current)
+        if (user.Username != request.Username)
+        {
+            var existingUser = await userRepository.GetUserByUsernameAsync(request.Username);
+            if (existingUser != null)
+                throw new InvalidOperationException("Username is already taken.");
+        }
+    
+        // Check if email is already taken (if it's different from current)
+        if (user.Email != request.Email)
+        {
+            var existingUser = await userRepository.GetUserByEmailAsync(request.Email);
+            if (existingUser != null)
+                throw new InvalidOperationException("Email is already registered.");
+        }
+    
+        // Update user properties
+        user.Username = request.Username;
+        user.Email = request.Email;
+    
+        await userRepository.UpdateAsync(user);
+        return true;
+    }
 }
