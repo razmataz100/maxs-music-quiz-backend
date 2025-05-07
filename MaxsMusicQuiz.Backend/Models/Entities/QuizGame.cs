@@ -1,14 +1,10 @@
 using MaxsMusicQuiz.Backend.Models.Entities;
-using MaxsMusicQuiz.Backend.Models.Enums;
 
 public class QuizGame
 {
     public int Id { get; set; }
-    public string Theme { get; set; } = string.Empty;
-    public string PlaylistUrl { get; set; } = string.Empty;
-    public DateTime? StartTime { get; set; }
-    public DateTime? EndTime { get; set; }
-    public ICollection<QuizGameUser> QuizGameUsers { get; set; } = new List<QuizGameUser>();
-    public string? JoinCode { get; set; }
-    public QuizGameStatus Status { get; set; } = QuizGameStatus.Created;
+    public string Theme { get; set; }
+    public string PlaylistUrl { get; set; }
+    public ICollection<QuizQuestion> Questions { get; set; }
+    public ICollection<GameHistory> GameHistories { get; set; }
 }

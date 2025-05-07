@@ -9,7 +9,7 @@ namespace MaxsMusicQuiz.Backend.Services;
 
 public class TokenService(IConfiguration configuration) : ITokenService
 {
-    public string GenerateToken(string username, int userId)
+    public string GenerateToken(string username, int userId, string userRole)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
@@ -20,7 +20,8 @@ public class TokenService(IConfiguration configuration) : ITokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, username),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("userId", userId.ToString())
+            new Claim("userId", userId.ToString()),
+            new Claim(ClaimTypes.Role, userRole) 
         };
 
         if (secretKey != null)

@@ -22,19 +22,78 @@ namespace MaxsMusicQuiz.Backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("MaxsMusicQuiz.Backend.Data.Entities.QuizGameUser", b =>
+            modelBuilder.Entity("MaxsMusicQuiz.Backend.Models.Entities.GameHistory", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CorrectAnswers")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PlayedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("QuestionsAnswered")
+                        .HasColumnType("int");
+
                     b.Property<int>("QuizGameId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("QuizGameId", "UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizGameId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuizGameUsers", (string)null);
+                    b.ToTable("GameHistories");
+                });
+
+            modelBuilder.Entity("MaxsMusicQuiz.Backend.Models.Entities.QuizQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.PrimitiveCollection<string>("AnswerChoices")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ArtistName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CorrectAnswer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QuizGameId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SongName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpotifyTrackId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizGameId");
+
+                    b.ToTable("QuizQuestions");
                 });
 
             modelBuilder.Entity("QuizGame", b =>
@@ -45,21 +104,9 @@ namespace MaxsMusicQuiz.Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("JoinCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PlaylistUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<string>("Theme")
                         .IsRequired()
@@ -92,6 +139,12 @@ namespace MaxsMusicQuiz.Backend.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<int>("TotalQuestionsAnswered")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalScore")
+                        .HasColumnType("int");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -101,16 +154,16 @@ namespace MaxsMusicQuiz.Backend.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("MaxsMusicQuiz.Backend.Data.Entities.QuizGameUser", b =>
+            modelBuilder.Entity("MaxsMusicQuiz.Backend.Models.Entities.GameHistory", b =>
                 {
                     b.HasOne("QuizGame", "QuizGame")
-                        .WithMany("QuizGameUsers")
+                        .WithMany("GameHistories")
                         .HasForeignKey("QuizGameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("User", "User")
-                        .WithMany("QuizGameUsers")
+                        .WithMany("GameHistories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -120,14 +173,27 @@ namespace MaxsMusicQuiz.Backend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MaxsMusicQuiz.Backend.Models.Entities.QuizQuestion", b =>
+                {
+                    b.HasOne("QuizGame", "QuizGame")
+                        .WithMany("Questions")
+                        .HasForeignKey("QuizGameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuizGame");
+                });
+
             modelBuilder.Entity("QuizGame", b =>
                 {
-                    b.Navigation("QuizGameUsers");
+                    b.Navigation("GameHistories");
+
+                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("User", b =>
                 {
-                    b.Navigation("QuizGameUsers");
+                    b.Navigation("GameHistories");
                 });
 #pragma warning restore 612, 618
         }

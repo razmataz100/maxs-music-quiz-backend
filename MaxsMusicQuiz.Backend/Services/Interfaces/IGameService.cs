@@ -1,3 +1,5 @@
+using MaxsMusicQuiz.Backend.Models.DTOs;
+using MaxsMusicQuiz.Backend.Models.Entities;
 using MaxsMusicQuiz.WebApi.Models.DTOs;
 
 namespace MaxsMusicQuiz.Backend.Services.Interfaces
@@ -5,10 +7,10 @@ namespace MaxsMusicQuiz.Backend.Services.Interfaces
     public interface IGameService
     {
         Task<QuizGame> CreateGameAsync(CreateGameRequest createGameRequest);
-        Task<IEnumerable<QuizGame>> GetAllGamesAsync();
-        Task<QuizGame> InitiateGameAsync(int gameId);
-        Task<QuizGame> JoinGameAsync(string joinCode, int userId);
-        Task<QuizGame?> GetGameByJoinCodeAsync(string joinCode);
-        Task<bool> LeaveGameAsync(string joinCode, int userId);
+        Task EndGameAsync(int gameId, int userId, int score, int questionsAnswered);
+        Task<IEnumerable<GameWithHighScore>> GetAllGamesWithHighScoresAsync(int userId);
+        Task DeleteGameAsync(int gameId);
+        Task<IEnumerable<QuizQuestion>> GetGameQuestionsAsync(int gameId);
+
     }
 }

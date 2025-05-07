@@ -16,13 +16,14 @@ public class AuthController(ITokenService tokenService, IUserService userService
 
         if (user != null)
         {
-            var token = tokenService.GenerateToken(user.Username, user.Id);
+            var token = tokenService.GenerateToken(user.Username, user.Id, user.Role.ToString());
             var response = new LoginResponse
             {
                 Username = user.Username,
                 UserId = user.Id,
                 Token = token,
-                Expiration = DateTime.UtcNow.AddHours(1)
+                Expiration = DateTime.UtcNow.AddHours(1),
+                UserRole = user.Role.ToString()
             };
 
             return Ok(response);

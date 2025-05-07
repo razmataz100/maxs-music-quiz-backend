@@ -1,3 +1,6 @@
+using MaxsMusicQuiz.Backend.Models.DTOs;
+using MaxsMusicQuiz.Backend.Models.Entities;
+
 namespace MaxsMusicQuiz.Backend.Repositories.Interfaces;
 
 public interface IGameRepository
@@ -6,9 +9,10 @@ public interface IGameRepository
     Task<IEnumerable<QuizGame>> GetAllAsync();
     Task<QuizGame> GetByIdAsync(int gameId);
     Task UpdateAsync(QuizGame quizGame);
-    Task<QuizGame> GetByJoinCodeAsync(string joinCode);
-    Task<bool> IsUserInGameAsync(int gameId, int userId);
-    Task AddUserToGameAsync(int gameId, int userId);
-    Task<QuizGame> GetGameByUserIdAsync(int userId);
-    Task RemoveQuizGameUserAsync(int gameId, int userId); 
+    Task AddQuestionsAsync(IEnumerable<QuizQuestion> questions);
+    Task DeleteQuestionsForGameAsync(int gameId);
+    Task AddGameHistoryAsync(GameHistory gameHistory);
+    Task<IEnumerable<GameWithHighScore>> GetAllWithHighScoresAsync(int userId);
+    Task DeleteGameAsync(int gameId);
+    Task<IEnumerable<QuizQuestion>> GetQuestionsByGameIdAsync(int gameId);
 }

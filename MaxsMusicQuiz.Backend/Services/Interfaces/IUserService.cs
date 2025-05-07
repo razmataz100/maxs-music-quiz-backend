@@ -1,3 +1,5 @@
+using MaxsMusicQuiz.Backend.Models.DTOs;
+
 namespace MaxsMusicQuiz.Backend.Services.Interfaces;
 
 public interface IUserService
@@ -6,6 +8,8 @@ public interface IUserService
     Task CreateUserAsync(string username, string password, string email);
     Task<bool> SendPasswordResetEmailAsync(string email);
     Task<bool> ResetPasswordAsync(string token, string newPassword);
-    Task<User?> GetUserByIdAsync(int userId);
-    
+    Task<string> SaveProfilePictureAsync(string userId, IFormFile file);
+    Task<string> GetProfilePictureUrlAsync(string userId);
+    Task<UserInfoResponse> GetUserInfoAsync(string userId);
+    Task<bool> UpdateUserInfoAsync(string userId, UpdateUserRequest request);
 }

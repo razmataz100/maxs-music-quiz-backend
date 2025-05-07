@@ -3,33 +3,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MaxsMusicQuiz.Backend.Data.Contexts
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
         public DbSet<QuizGame> QuizGames { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<QuizGameUser> QuizGameUsers { get; set; } // Ensure this is added
+        public DbSet<QuizQuestion> QuizQuestions { get; set; }
+        public DbSet<GameHistory> GameHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<QuizGameUser>().ToTable("QuizGameUsers");
+            modelBuilder.Entity<GameHistory>()
+                .HasOne(gh => gh.QuizGame)
+                .WithMany(qg => qg.GameHistories)
+                .HasForeignKey(gh => gh.QuizGameId);
 
-            modelBuilder.Entity<QuizGameUser>()
-                .HasKey(qgu => new { qgu.QuizGameId, qgu.UserId });
-
-            modelBuilder.Entity<QuizGameUser>()
-                .HasOne(qgu => qgu.QuizGame)
-                .WithMany(qg => qg.QuizGameUsers)
-                .HasForeignKey(qgu => qgu.QuizGameId);
-
-            modelBuilder.Entity<QuizGameUser>()
-                .HasOne(qgu => qgu.User)
-                .WithMany(u => u.QuizGameUsers)
-                .HasForeignKey(qgu => qgu.UserId);
+            modelBuilder.Entity<GameHistory>()
+                .HasOne(gh => gh.User)
+                .WithMany(u => u.GameHistories)
+                .HasForeignKey(gh => gh.UserId);
         }
-
     }
 }

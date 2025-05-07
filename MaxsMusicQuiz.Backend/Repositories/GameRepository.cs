@@ -1,4 +1,5 @@
 using MaxsMusicQuiz.Backend.Data.Contexts;
+using MaxsMusicQuiz.Backend.Models.DTOs;
 using MaxsMusicQuiz.Backend.Models.Entities;
 using MaxsMusicQuiz.Backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,73 +14,119 @@ namespace MaxsMusicQuiz.Backend.Repositories
             await context.SaveChangesAsync();
             return quizGame;
         }
-        
+
         public async Task<IEnumerable<QuizGame>> GetAllAsync()
         {
             return await context.QuizGames.ToListAsync();
         }
-        
-        public async Task<QuizGame> GetByIdAsync(int gameId) 
+
+        public async Task<QuizGame> GetByIdAsync(int gameId)
         {
             return await context.QuizGames
-                       .FirstOrDefaultAsync(g => g.Id == gameId) 
+                       .Include(g => g.Questions)
+                       .FirstOrDefaultAsync(g => g.Id == gameId)
                    ?? throw new InvalidOperationException("Game not found");
         }
-        
+
         public async Task UpdateAsync(QuizGame quizGame)
         {
             context.QuizGames.Update(quizGame);
             await context.SaveChangesAsync();
         }
-        
-        public async Task<QuizGame> GetByJoinCodeAsync(string joinCode)
+
+        public async Task AddQuestionsAsync(IEnumerable<QuizQuestion> questions)
+        {
+            await context.QuizQuestions.AddRangeAsync(questions);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task DeleteQuestionsForGameAsync(int gameId)
+        {
+            var questions = await context.QuizQuestions
+                .Where(q => q.QuizGameId == gameId)
+                .ToListAsync();
+
+            if (questions.Any())
+            {
+                context.QuizQuestions.RemoveRange(questions);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task AddGameHistoryAsync(GameHistory gameHistory)
+        {
+            await context.GameHistories.AddAsync(gameHistory);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<GameWithHighScore>> GetAllWithHighScoresAsync(int userId)
         {
             return await context.QuizGames
-                       .Include(qg => qg.QuizGameUsers)
-                       .ThenInclude(qgu => qgu.User)
-                       .FirstOrDefaultAsync(qg => qg.JoinCode == joinCode) 
-                   ?? throw new InvalidOperationException("QuizGame with the specified join code was not found.");
+                .Select(game => new GameWithHighScore
+                {
+                    GameId = game.Id,
+                    Theme = game.Theme,
+                    QuestionsAnswered = game.GameHistories
+                        .Where(gh => gh.UserId == userId)
+                        .Sum(gh => gh.QuestionsAnswered),
+                    CorrectAnswers = game.GameHistories
+                        .Where(gh => gh.UserId == userId)
+                        .Sum(gh => gh.CorrectAnswers),
+                    Username = context.Users
+                        .Where(u => u.Id == userId)
+                        .Select(u => u.Username)
+                        .FirstOrDefault(),
+                    // Add these fields:
+                    HighScore = game.GameHistories
+                        .OrderByDescending(gh => gh.CorrectAnswers)
+                        .Select(gh => (int?)gh.CorrectAnswers)
+                        .FirstOrDefault(),
+                    HighScoreUsername = game.GameHistories
+                        .OrderByDescending(gh => gh.CorrectAnswers)
+                        .Select(gh => gh.User.Username)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
         }
 
-        public async Task<bool> IsUserInGameAsync(int gameId, int userId)
+        public async Task DeleteGameAsync(int gameId)
         {
-            return await context.QuizGameUsers.AnyAsync(qgu => qgu.QuizGameId == gameId && qgu.UserId == userId);
-        }
+            var gameHistories = await context.GameHistories
+                .Where(gh => gh.QuizGameId == gameId)
+                .ToListAsync();
 
-        public async Task AddUserToGameAsync(int gameId, int userId)
-        {
-            var quizGameUser = new QuizGameUser
+            if (gameHistories.Any())
             {
-                QuizGameId = gameId,
-                UserId = userId
-            };
-            await context.QuizGameUsers.AddAsync(quizGameUser);
+                context.GameHistories.RemoveRange(gameHistories);
+            }
+            
+            var questions = await context.QuizQuestions
+                .Where(q => q.QuizGameId == gameId)
+                .ToListAsync();
+
+            if (questions.Any())
+            {
+                context.QuizQuestions.RemoveRange(questions);
+            }
+            
+            var game = await context.QuizGames.FindAsync(gameId);
+            if (game != null)
+            {
+                context.QuizGames.Remove(game);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Game with ID {gameId} not found");
+            }
+            
             await context.SaveChangesAsync();
         }
         
-        public async Task<QuizGame> GetGameByUserIdAsync(int userId)
+        public async Task<IEnumerable<QuizQuestion>> GetQuestionsByGameIdAsync(int gameId)
         {
-            var game = await context.QuizGames
-                .FirstOrDefaultAsync(g => g.QuizGameUsers.Any(qgu => qgu.UserId == userId));
-
-            if (game == null)
-            {
-                throw new InvalidOperationException("No game found for the specified user ID.");
-            }
-
-            return game;
-        }
-        
-        public async Task RemoveQuizGameUserAsync(int gameId, int userId)
-        {
-            var quizGameUser = await context.QuizGameUsers
-                .FirstOrDefaultAsync(qgu => qgu.QuizGameId == gameId && qgu.UserId == userId);
-
-            if (quizGameUser != null)
-            {
-                context.QuizGameUsers.Remove(quizGameUser);
-                await context.SaveChangesAsync();
-            }
+            return await context.QuizQuestions
+                .Where(q => q.QuizGameId == gameId)
+                .ToListAsync();
         }
     }
 }
