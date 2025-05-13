@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="SendGrid" Version="9.29.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Services\QuestionGenerationService.cs" />
+      <Compile Remove="Services\Interfaces\IQuestionGenerationService.cs" />
+      <Compile Remove="Models\DTOs\QuizQuestion.cs" />
+      <Compile Remove="Models\Enums\QuizGameStatus.cs" />
+      <Compile Remove="Models\Entities\QuizGameUser.cs" />
+      <Compile Remove="Hubs\**" />
+      <Compile Remove="Controllers\SpotifyController.cs" />
+      <Compile Remove="Extensions\HttpContextExtensions.cs" />
+      <Compile Remove="Models\DTOs\Spotify.cs" />
+      <Compile Remove="Models\Common\**" />
+      <Compile Remove="Services\Interfaces\IRelatedArtistService.cs" />
+      <Compile Remove="Services\RelatedArtistService.cs" />
+      <Compile Remove="Data\Contexts\**" />
+      <Compile Remove="Models\DTOs\Leaderboard.cs" />
+      <Compile Remove="Models\DTOs\Leaderboards.cs" />
+      <Compile Remove="Models\DTOs\PasswordReset.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Hubs\**" />
+      <EmbeddedResource Remove="Models\Common\**" />
+      <EmbeddedResource Remove="Data\Contexts\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="Hubs\**" />
+      <Content Remove="Models\Common\**" />
+      <Content Remove="Data\Contexts\**" />
+      <Content Remove="http-client.env.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Hubs\**" />
+      <None Remove="Models\Common\**" />
+      <None Remove="Data\Contexts\**" />
+    </ItemGroup>
+
+</Project>

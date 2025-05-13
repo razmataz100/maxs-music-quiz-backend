@@ -1,0 +1,32 @@
+## Build output
+bin/
+obj/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## VS Code
+.vscode/
+
+## Rider
+.idea/
+
+## ASP.NET secrets
+appsettings.Development.json
+appsettings.json
+
+## Logs
+*.log
+
+## DotNet environment files
+.env
+
+## Others
+*.DS_Store
+Thumbs.db
+
+## Publish output
+wwwroot/dist/
