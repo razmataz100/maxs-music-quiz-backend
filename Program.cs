@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 var configuration = builder.Configuration;
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
@@ -26,6 +25,17 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials(); 
+    });
+    
+    options.AddPolicy("Production", policy =>
+    {
+        policy.WithOrigins(
+            "https://maxs-music-quiz-frontend-nogkgfg4i-rasmus-projects-8b513487.vercel.app",
+            "https://maxs-music-quiz-frontend.vercel.app"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -55,12 +65,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-app.UseCors("AllowLocalhost5173");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("AllowLocalhost5173");
+}
+else
+{
+    app.UseCors("Production");
+}
+
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add Railway port configuration
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://+:{port}");
 
 app.Run();
