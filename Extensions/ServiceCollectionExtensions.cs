@@ -47,12 +47,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    public static void AddApiServices(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddControllers();
-        
-        return services;
     }
 }

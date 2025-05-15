@@ -2,7 +2,7 @@ namespace MaxsMusicQuiz.Backend.Extensions;
 
 public static class PipelineExtensions
 {
-    public static WebApplication ConfigurePipeline(this WebApplication app)
+    public static void ConfigurePipeline(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
@@ -16,7 +16,5 @@ public static class PipelineExtensions
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-       
-        return app;
     }
 }
