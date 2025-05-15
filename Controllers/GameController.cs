@@ -55,7 +55,7 @@ namespace MaxsMusicQuiz.Backend.Controllers
             }
         }
 
-        [HttpPost("{gameId}/end-game")]
+        [HttpPost("{gameId}/end")]
         [Authorize]
         public async Task<IActionResult> EndGame(int gameId, [FromBody] EndGameRequest endGameRequest)
         {
@@ -78,7 +78,7 @@ namespace MaxsMusicQuiz.Backend.Controllers
             }
         }
 
-        [HttpPost("{gameId}/start-game")]
+        [HttpPost("{gameId}/start")]
         [Authorize]
         public async Task<IActionResult> StartGame(int gameId)
         {

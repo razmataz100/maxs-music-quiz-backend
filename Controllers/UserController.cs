@@ -4,6 +4,7 @@ using MaxsMusicQuiz.Backend.Models.DTOs.Auth;
 using MaxsMusicQuiz.Backend.Models.DTOs.User;
 using Microsoft.AspNetCore.Mvc;
 using MaxsMusicQuiz.Backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MaxsMusicQuiz.Backend.Controllers
 {
@@ -25,7 +26,7 @@ namespace MaxsMusicQuiz.Backend.Controllers
             }
         }
         
-        [HttpPost("reset-password")]
+        [HttpPost("password/reset")] 
         public async Task<IActionResult> ResetPassword([FromBody] PasswordResetRequest request)
         {
             var result = await userService.SendPasswordResetEmailAsync(request.Email);
@@ -37,7 +38,7 @@ namespace MaxsMusicQuiz.Backend.Controllers
             return BadRequest("No user found with that email address.");
         }
 
-        [HttpPost("reset-password-confirmation")]
+        [HttpPost("password/reset/confirm")] 
         public async Task<IActionResult> ResetPasswordConfirmation([FromBody] PasswordResetConfirmationRequest request)
         {
             var result = await userService.ResetPasswordAsync(request.Token, request.NewPassword);
@@ -49,7 +50,8 @@ namespace MaxsMusicQuiz.Backend.Controllers
             return BadRequest("Invalid or expired reset token.");
         }
         
-        [HttpPost("upload-profile-picture")]
+        [HttpPost("profile/picture")] 
+        [Authorize]
         public async Task<IActionResult> UploadProfilePicture(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -70,7 +72,8 @@ namespace MaxsMusicQuiz.Backend.Controllers
             }
         }
 
-        [HttpGet("profile-picture")]
+        [HttpGet("profile/picture")]
+        [Authorize] 
         public async Task<IActionResult> GetProfilePicture()
         {
             var userId = User.FindFirst("userId")?.Value;
@@ -110,7 +113,8 @@ namespace MaxsMusicQuiz.Backend.Controllers
             return File(fileStream, contentType);
         }
         
-        [HttpGet("user-info")]
+        [HttpGet("profile")]
+        [Authorize] 
         public async Task<IActionResult> GetUserInfo()
         {
             var userId = User.FindFirst("userId")?.Value;
@@ -126,7 +130,8 @@ namespace MaxsMusicQuiz.Backend.Controllers
             return Ok(userInfo);
         }
         
-        [HttpPut("update")]
+        [HttpPut("profile")]
+        [Authorize]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserRequest request)
         {
             var userId = User.FindFirst("userId")?.Value;
